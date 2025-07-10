@@ -1,55 +1,59 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require('cors');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors');
 require('dotenv').config();
-const mongoose = require('mongoose');
-const { errorHandler } = require('./middleware/errorHandler');
+
+// Import configurations
+const connectDB = require('./config/database');
+
+// Import security middleware
 const { limiter, securityHeaders, sanitizeInput } = require('./middleware/security');
-const http = require('http');
-const socketIo = require('socket.io');
-const jwt = require('jsonwebtoken');
-const notificationService = require('./services/NotificationService');
+const { errorHandler } = require('./middleware/errorHandler');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var productsRouter = require('./routes/products');
-var ordersRouter = require('./routes/orders');
-var inventoryRouter = require('./routes/inventory');
+// Import routes
+const indexRouter = require('./routes/index');
+const userRoutes = require('./routes/users');
+const productsRouter = require('./routes/products');
+const ordersRouter = require('./routes/orders');
+const inventoryRouter = require('./routes/inventory');
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch(err => {
-  console.error('MongoDB connection error:', err);
-});
+// Initialize express app
+const app = express();
 
-var app = express();
+// Connect to MongoDB
+connectDB();
 
 // Apply security middlewares
 app.use(limiter);
 app.use(securityHeaders);
 app.use(sanitizeInput);
 
-// view engine setup
+// view engine setup (if needed)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // Configure CORS
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] // Replace with your frontend domain
-    : 'http://localhost:5173',
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      process.env.NODE_ENV === 'production' ? 'https://frontend-kapum-2.vercel.app' : 'http://localhost:5173'
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  optionsSuccessStatus: 200
 }));
 
+// Basic middleware
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -58,61 +62,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // API routes
 app.use('/', indexRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/users', userRoutes);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/inventory', inventoryRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
 // error handler
 app.use(errorHandler);
 
-// Create HTTP server
-const server = http.createServer(app);
-
-// Initialize Socket.IO with CORS
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? ['https://yourdomain.com']
-      : 'http://localhost:5173',
-    methods: ['GET', 'POST']
-  }
-});
-
-// Socket.IO authentication middleware
-io.use((socket, next) => {
-  const token = socket.handshake.auth.token;
-  if (!token) {
-    return next(new Error('Authentication error'));
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    socket.user = decoded;
-    next();
-  } catch (err) {
-    next(new Error('Authentication error'));
-  }
-});
-
-// Socket.IO connection handler
-io.on('connection', (socket) => {
-  console.log('Client connected:', socket.user.userId);
-  
-  // Register client in notification service
-  notificationService.registerClient(socket.user.userId, socket);
-
-  // Handle disconnection
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.user.userId);
-    notificationService.removeClient(socket.user.userId);
-  });
-});
-
-// Replace app.listen with server.listen in www
-module.exports = { app, server };
+// Export app for serverless deployment
+module.exports = app;

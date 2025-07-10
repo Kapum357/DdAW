@@ -5,6 +5,9 @@ import { NotificationProvider } from './context/NotificationContext';
 import PrivateRoute from './components/auth/PrivateRoute';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import Orders from './features/orders/Orders';
+import Products from './features/products/Products';
+import Inventory from './features/inventory/Inventory';
 import './App.css'
 
 function App() {
@@ -25,12 +28,12 @@ function App() {
               }
             >
               <Route index element={<Navigate to="/orders" replace />} />
-              <Route path="orders/*" element={<div>Orders Component</div>} />
+              <Route path="orders/*" element={<Orders />} />
               <Route 
                 path="inventory/*" 
                 element={
                   <PrivateRoute roles={['pos_operator', 'admin']}>
-                    <div>Inventory Component</div>
+                    <Inventory />
                   </PrivateRoute>
                 } 
               />
@@ -38,7 +41,7 @@ function App() {
                 path="products/*" 
                 element={
                   <PrivateRoute roles={['pos_operator', 'admin']}>
-                    <div>Products Component</div>
+                    <Products />
                   </PrivateRoute>
                 } 
               />
