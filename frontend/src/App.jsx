@@ -16,8 +16,12 @@ function App() {
       <NotificationProvider>
         <Router basename="/DdAW">
           <Routes>
+            {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* Add this explicit route for the root path */}
+            <Route index element={<Navigate to="/login" replace />} />
             
             <Route 
               path="/" 
