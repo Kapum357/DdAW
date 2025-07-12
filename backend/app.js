@@ -39,13 +39,14 @@ app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
       'http://localhost:5173',                          // Local frontend
-      'https://frontend-kapum-2.vercel.app',            // Production frontend
+      'https://kapum357.github.io',                     // GitHub Pages domain 
       'https://backend-kapum357s-projects.vercel.app'   // Vercel backend
     ];
     
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('CORS blocked for:', origin);  // For debugging
       callback(new Error('Not allowed by CORS'));
     }
   },
