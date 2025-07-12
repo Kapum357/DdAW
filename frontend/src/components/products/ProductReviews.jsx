@@ -27,7 +27,7 @@ const ProductReviews = ({ productId }) => {
   const [comment, setComment] = useState('');
   const [error, setError] = useState(null);
   const { user } = useAuth();
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = 'http://localhost:3000';
 
   const fetchReviews = useCallback(async () => {
     try {

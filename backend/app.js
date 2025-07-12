@@ -75,5 +75,8 @@ app.use((req, res, next) => {
 // error handler
 app.use(errorHandler);
 
-// Export app for serverless deployment
-module.exports = app;
+// Create HTTP server
+const server = require('http').createServer(app);
+
+// Export both app and server
+module.exports = { app, server };

@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize axios with secure defaults
   axios.defaults.withCredentials = true; // Enable sending cookies
-  axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  axios.defaults.baseURL = 'http://localhost:3000';
   
   // Add request interceptor for JWT token
   axios.interceptors.request.use(

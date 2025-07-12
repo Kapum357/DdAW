@@ -27,7 +27,7 @@ const Products = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { user } = useAuth();
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = 'http://localhost:3000';
 
   // Configure axios defaults
   axios.defaults.baseURL = apiUrl;

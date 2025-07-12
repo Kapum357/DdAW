@@ -34,7 +34,7 @@ const OrderHistory = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   useAuth();
   const navigate = useNavigate();
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = 'http://localhost:3000';
 
   const fetchOrders = useCallback(async () => {
     try {

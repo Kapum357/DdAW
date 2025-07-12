@@ -13,8 +13,7 @@ const connectDB = async () => {
       useUnifiedTopology: true,
       bufferCommands: false,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 5000
     });
 
     cachedConnection = conn;

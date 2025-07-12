@@ -29,7 +29,7 @@ const ServicePointSelector = ({ onSelect, selectedPoint }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = 'http://localhost:3000';
 
   const fetchServicePoints = useCallback(async () => {
     try {

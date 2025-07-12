@@ -27,7 +27,7 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = 'http://localhost:3000';
 
   const fetchOrders = useCallback(async () => {
     if (!user) return;

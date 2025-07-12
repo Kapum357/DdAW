@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const { auth, checkRole } = require('../middleware/auth');
-const notificationService = require('../services/NotificationService');
 
 // GET all orders (operadores POS pueden ver todos, clientes solo ven los suyos)
 router.get('/', auth, async (req, res) => {
@@ -62,9 +61,6 @@ router.post('/', auth, async (req, res) => {
   try {
     const newOrder = await order.save();
     
-    // Notify relevant parties
-    notificationService.notifyOrderStatus(newOrder);
-
     res.status(201).json(newOrder);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -107,9 +103,6 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     const updatedOrder = await order.save();
-
-    // Send real-time notification
-    notificationService.notifyOrderStatus(updatedOrder);
 
     res.json(updatedOrder);
   } catch (err) {
@@ -159,9 +152,6 @@ router.post('/:id/comments', auth, async (req, res) => {
     });
 
     const updatedOrder = await order.save();
-
-    // Send real-time notification
-    notificationService.notifyOrderStatus(updatedOrder);
 
     res.json(updatedOrder);
   } catch (err) {
