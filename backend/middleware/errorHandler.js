@@ -1,56 +1,34 @@
 const { errorResponse } = require('../utils/responseHandler');
 
+// AppError class for custom errors
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    this.isOperational = true;
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
+// Global error handler middleware
 const errorHandler = (err, req, res, next) => {
-  console.error('Error details:', {
+  console.error('ERROR DETAILS:', {
     message: err.message,
     stack: err.stack,
-    path: req.path,
-    method: req.method
+    path: req.path
   });
 
-  // Handle mongoose connection errors specifically
-  if (err.name === 'MongooseServerSelectionError') {
-    return errorResponse(res, 'Database connection error', 503);
-  }
-
-  if (err instanceof AppError) {
-    return errorResponse(res, err.message, err.statusCode);
-  }
-
-  if (err.name === 'ValidationError') {
-    const message = Object.values(err.errors).map(val => val.message).join(', ');
-    return errorResponse(res, message, 400);
-  }
-
-  if (err.name === 'CastError') {
-    return errorResponse(res, `Invalid ${err.path}: ${err.value}`, 400);
-  }
-
-  if (err.code === 11000) {
-    const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-    return errorResponse(res, `Duplicate field value: ${value}`, 400);
-  }
-
-  // Default error
+  // Return more detailed error in response for debugging
   const statusCode = err.statusCode || 500;
-  return errorResponse(res, 
-    process.env.NODE_ENV === 'production' 
-      ? 'Something went wrong' 
-      : err.message, 
-    statusCode
-  );
+  return res.status(statusCode).json({
+    success: false,
+    error: {
+      message: process.env.NODE_ENV === 'production' 
+        ? err.message || 'Something went wrong' 
+        : err.message,
+      stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined
+    }
+  });
 };
 
-module.exports = {
-  AppError,
-  errorHandler
-};
+module.exports = { AppError, errorHandler };

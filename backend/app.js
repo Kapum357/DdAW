@@ -23,6 +23,9 @@ const inventoryRouter = require('./routes/inventory');
 // Initialize express app
 const app = express();
 
+// Trust proxy
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 connectDB();
 
@@ -31,16 +34,15 @@ app.use(limiter);
 app.use(securityHeaders);
 app.use(sanitizeInput);
 
-// view engine setup (if needed)
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
-
 // Configure CORS
 app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
-      process.env.NODE_ENV === 'production' ? 'https://frontend-kapum-2.vercel.app' : 'http://localhost:5173'
+      'http://localhost:5173',                          // Local frontend
+      'https://frontend-kapum-2.vercel.app',            // Production frontend
+      'https://backend-kapum357s-projects.vercel.app'   // Vercel backend
     ];
+    
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -66,6 +68,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/inventory', inventoryRouter);
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok'});
+});
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -75,8 +80,5 @@ app.use((req, res, next) => {
 // error handler
 app.use(errorHandler);
 
-// Create HTTP server
-const server = require('http').createServer(app);
-
-// Export both app and server
-module.exports = { app, server };
+// Export only the Express app
+module.exports = app;

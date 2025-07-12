@@ -27,7 +27,7 @@ const Products = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { user } = useAuth();
-  const apiUrl = 'http://localhost:3000';
+  const apiUrl = 'https://backend-kapum357s-projects.vercel.app';
 
   // Configure axios defaults
   axios.defaults.baseURL = apiUrl;

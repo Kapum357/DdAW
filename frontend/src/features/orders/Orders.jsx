@@ -27,7 +27,7 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
-  const apiUrl = 'http://localhost:3000';
+  const apiUrl = 'https://backend-kapum357s-projects.vercel.app';
 
   const fetchOrders = useCallback(async () => {
     if (!user) return;

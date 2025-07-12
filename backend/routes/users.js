@@ -102,53 +102,56 @@ router.post('/register', registerValidation, async (req, res) => {
 // Login endpoint with rate limiting
 router.post('/login', authLimiter, async (req, res) => {
     try {
+        console.log('Login attempt for:', req.body.email);
         const { email, password } = req.body;
 
         // Find user and select password field explicitly
         const user = await User.findOne({ email }).select('+password');
+        
         if (!user) {
+            console.log('User not found:', email);
             return res.status(401).json({ 
                 message: 'Invalid credentials' 
             });
         }
 
+        console.log('User found, verifying password');
         // Verify password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.log('Password mismatch for:', email);
             return res.status(401).json({ 
                 message: 'Invalid credentials' 
             });
         }
 
-        // Generate JWT with enhanced security
+        console.log('Password verified, generating token');
+        // Generate JWT
         const token = jwt.sign(
             { 
                 userId: user._id,
                 role: user.role,
-                sessionId: require('crypto').randomBytes(32).toString('hex')
+                sessionId: require('crypto').randomBytes(16).toString('hex')
             }, 
             process.env.JWT_SECRET,
-            { 
-                expiresIn: '24h',
-                issuer: 'your-app-name',
-                audience: 'your-app-users'
-            }
+            { expiresIn: '24h' }
         );
 
-        // Remove sensitive data before sending response
-        const userResponse = {
-            id: user._id,
-            username: user.username,
-            email: user.email,
-            role: user.role
-        };
-
+        console.log('Login successful for:', email);
         res.json({
             token,
-            user: userResponse
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Login error:', error);
+        res.status(500).json({ 
+            message: error.message || 'An error occurred during login'
+        });
     }
 });
 

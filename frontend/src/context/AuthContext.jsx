@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize axios with secure defaults
   axios.defaults.withCredentials = true; // Enable sending cookies
-  axios.defaults.baseURL = 'http://localhost:3000';
+  axios.defaults.baseURL = 'https://backend-kapum357s-projects.vercel.app';
   
   // Add request interceptor for JWT token
   axios.interceptors.request.use(
@@ -104,6 +104,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
+      console.log('Attempting login to:', axios.defaults.baseURL);
       const response = await axios.post('/api/users/login', credentials);
       const { token, user: userData } = response.data;
       
@@ -114,7 +115,8 @@ export const AuthProvider = ({ children }) => {
       
       return userData;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error durante el inicio de sesión';
+      console.error('Login error:', error.response?.data || error.message);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error?.message || 'Error connecting to server';
       throw new Error(errorMessage);
     }
   };

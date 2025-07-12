@@ -34,7 +34,7 @@ const OrderHistory = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   useAuth();
   const navigate = useNavigate();
-  const apiUrl = 'http://localhost:3000';
+  const apiUrl = 'https://backend-kapum357s-projects.vercel.app';
 
   const fetchOrders = useCallback(async () => {
     try {

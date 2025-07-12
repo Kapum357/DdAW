@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 let cachedConnection = null;
 
@@ -8,20 +9,25 @@ const connectDB = async () => {
   }
 
   try {
+    console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Defined' : 'Undefined');
+    
+    // Add connection options for better reliability
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      bufferCommands: false,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     });
-
+    
     cachedConnection = conn;
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;
   } catch (error) {
-    console.error(`Error: ${error.message}`);
-    throw error; // Let the error handler deal with it
+    console.error('MongoDB connection error:', error);
+    // Don't exit on production, let the app try to recover
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   }
 };
 

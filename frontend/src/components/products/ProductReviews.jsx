@@ -27,7 +27,7 @@ const ProductReviews = ({ productId }) => {
   const [comment, setComment] = useState('');
   const [error, setError] = useState(null);
   const { user } = useAuth();
-  const apiUrl = 'http://localhost:3000';
+  const apiUrl = 'https://backend-kapum357s-projects.vercel.app';
 
   const fetchReviews = useCallback(async () => {
     try {

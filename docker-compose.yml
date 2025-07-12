@@ -9,7 +9,6 @@ services:
       - mongodb
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/ddaw
-      - NODE_ENV=development
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
@@ -23,7 +22,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:3000
+      - VITE_API_URL=https://backend-kapum357s-projects.vercel.app
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
