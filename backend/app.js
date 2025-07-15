@@ -7,7 +7,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 // Import configurations
-const connectDB = require('./config/database');
+const connectToMongoDB = require('./config/vercel-db');
 
 // Import security middleware
 const { limiter, securityHeaders, sanitizeInput } = require('./middleware/security');
@@ -26,8 +26,15 @@ const app = express();
 // Trust proxy
 app.set('trust proxy', 1);
 
-// Connect to MongoDB
-connectDB();
+// Don't try to connect immediately in serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  connectToMongoDB()
+    .then(() => console.log('MongoDB connected successfully'))
+    .catch(err => {
+      console.error('Initial MongoDB connection failed:', err);
+      // Don't crash the app, we'll retry on each request
+    });
+}
 
 // Apply security middlewares
 app.use(limiter);

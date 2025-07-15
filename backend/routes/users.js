@@ -7,6 +7,7 @@ const User = require('../models/User');
 const { auth, checkRole } = require('../middleware/auth');
 const { authLimiter, validatePasswordStrength } = require('../middleware/security');
 const connectDB = require('../config/database'); // Import as connectDB
+const connectToMongoDB = require('../config/vercel-db');
 
 // Enhanced validation for registration
 const registerValidation = [
@@ -103,17 +104,31 @@ router.post('/register', registerValidation, async (req, res) => {
 // Login endpoint with rate limiting
 router.post('/login', authLimiter, async (req, res) => {
     try {
-        // First ensure we have a database connection for this request
-        await connectDB(); // Use the correct function name
-        
         console.log('Login attempt for:', req.body.email);
+        
+        // Connect to MongoDB with timeout protection
+        try {
+            await Promise.race([
+                connectToMongoDB(),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Database connection timed out')), 5000)
+                )
+            ]);
+        } catch (dbError) {
+            console.error('Database connection error:', dbError);
+            return res.status(503).json({
+                message: 'Database service temporarily unavailable, please try again shortly',
+                error: process.env.NODE_ENV === 'production' ? 'Connection error' : dbError.message
+            });
+        }
+        
         const { email, password } = req.body;
 
-        // Set a timeout on the database operation
+        // Find user with timeout protection
         const user = await Promise.race([
             User.findOne({ email }).select('+password'),
             new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Database operation timed out')), 8000)
+                setTimeout(() => reject(new Error('Database query timed out')), 5000)
             )
         ]);
         
@@ -159,7 +174,8 @@ router.post('/login', authLimiter, async (req, res) => {
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ 
-            message: error.message || 'An error occurred during login'
+            message: 'An error occurred during login',
+            error: process.env.NODE_ENV === 'production' ? undefined : error.message
         });
     }
 });
