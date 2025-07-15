@@ -6,6 +6,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth, checkRole } = require('../middleware/auth');
 const { authLimiter, validatePasswordStrength } = require('../middleware/security');
+const connectDB = require('../config/database'); // Import as connectDB
 
 // Enhanced validation for registration
 const registerValidation = [
@@ -102,11 +103,19 @@ router.post('/register', registerValidation, async (req, res) => {
 // Login endpoint with rate limiting
 router.post('/login', authLimiter, async (req, res) => {
     try {
+        // First ensure we have a database connection for this request
+        await connectDB(); // Use the correct function name
+        
         console.log('Login attempt for:', req.body.email);
         const { email, password } = req.body;
 
-        // Find user and select password field explicitly
-        const user = await User.findOne({ email }).select('+password');
+        // Set a timeout on the database operation
+        const user = await Promise.race([
+            User.findOne({ email }).select('+password'),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Database operation timed out')), 8000)
+            )
+        ]);
         
         if (!user) {
             console.log('User not found:', email);

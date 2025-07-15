@@ -2,32 +2,40 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 let cachedConnection = null;
+let isConnecting = false;
 
 const connectDB = async () => {
-  if (cachedConnection) {
+  if (cachedConnection?.connection?.readyState === 1) {
     return cachedConnection;
   }
-
+  
+  if (isConnecting) {
+    // Wait for existing connection attempt
+    while (isConnecting) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    if (cachedConnection) return cachedConnection;
+  }
+  
   try {
-    console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Defined' : 'Undefined');
+    isConnecting = true;
+    console.log('Connecting to MongoDB...');
     
-    // Add connection options for better reliability
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    cachedConnection = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      bufferCommands: false,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      maxPoolSize: 10
     });
     
-    cachedConnection = conn;
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    return conn;
+    return cachedConnection;
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    // Don't exit on production, let the app try to recover
-    if (process.env.NODE_ENV !== 'production') {
-      process.exit(1);
-    }
+    throw error;
+  } finally {
+    isConnecting = false;
   }
 };
 
