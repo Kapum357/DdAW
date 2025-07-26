@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f7f7f7;
+}
+
+nav {
+  background: #222;
+  color: #fff;
+  padding: 1rem;
+}
+
+nav a {
+  color: #fff;
+  margin-right: 1rem;
+  text-decoration: none;
+}
+
+nav a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.main {
+  padding: 2rem;
+}
