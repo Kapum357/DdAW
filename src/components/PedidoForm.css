@@ -1,0 +1,7 @@
+/* Cart item animation styles */
+.cart-item-animating {
+  background: #ffeeba !important;
+  opacity: 0.7;
+  transform: scale(0.98) translateX(10px);
+  transition: all 0.5s;
+}
